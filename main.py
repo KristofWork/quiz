@@ -18,6 +18,7 @@ token = os.getenv("BOT_TOKEN")
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token)
 dp = Dispatcher()
+db = DB("quiz.db")
 
 
 async def main():
