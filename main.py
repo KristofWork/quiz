@@ -22,19 +22,21 @@ bot = Bot(token)
 dp = Dispatcher()
 db = DB("quiz.db")
 
+
 @dp.message(Command("start"))
 async def start(message: types.Message):
     if not db.is_user_exists(message.chat.id):
         db.create_user(message.chat.id, message.from_user.username)
-    
+
     # TODO: Проверка запущена ли игра
     # TODO: Начать задавать вопросы
+
 
 @dp.message(Command("admin"))
 async def admin(message: types.Message, command: CommandObject):
     if db.is_admin(message.chat.id):
         await message.answer("Вы уже являетесь администратором!")
-        return 
+        return
     if not command.args:
         await message.answer("Требуется пароль!")
         return
@@ -48,6 +50,23 @@ async def admin(message: types.Message, command: CommandObject):
         return
     db.create_admin(message.chat.id)
     await message.answer("Теперь вы администратор")
+
+
+@dp.message(Command("startgame"))
+async def startgame(message: types.Message):
+    if not db.is_admin(message.chat.id):
+        return
+
+    if db.is_game_on():
+        await message.answer("Игра уже запущена!")
+        return
+
+    db.change_game_state(True)
+    await message.answer("Игра запущена!")
+
+    for user_id in db.get_all_users_id():
+        bot.send_message(user_id, "Игра началась! Поскорее пиши /start, чтобы начать!")
+
 
 async def main():
     await dp.start_polling(bot)
