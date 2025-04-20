@@ -15,3 +15,13 @@ class DB:
             "INSERT INTO users(chat_id, username) VALUES(?, ?)", [chat_id, username]
         )
         self.connect.commit()
+
+    def create_admin(self, chat_id: int) -> None:
+        self.cursor.execute(
+            "INSERT INTO admins(chat_id) VALUES(?)", [chat_id]
+        )
+        self.connect.commit()
+
+    def is_admin(self, chat_id: int) -> bool:
+        self.cursor.execute("SELECT chat_id FROM admins WHERE chat_id = ?", [chat_id])
+        return self.cursor.fetchone() is not None

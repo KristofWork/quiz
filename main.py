@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from aiogram.filters.command import CommandObject
 from dotenv import load_dotenv
 
 from model import DB
@@ -14,6 +15,7 @@ from model import DB
 load_dotenv()
 
 token = os.getenv("BOT_TOKEN")
+admin_password = os.getenv("ADMIN_PASSWORD")
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token)
@@ -28,6 +30,24 @@ async def start(message: types.Message):
     # TODO: Проверка запущена ли игра
     # TODO: Начать задавать вопросы
 
+@dp.message(Command("admin"))
+async def admin(message: types.Message, command: CommandObject):
+    if db.is_admin(message.chat.id):
+        await message.answer("Вы уже являетесь администратором!")
+        return 
+    if not command.args:
+        await message.answer("Требуется пароль!")
+        return
+    args = command.args.split()
+    if len(args) != 1:
+        await message.answer("Не правильное количество аргументов")
+        return
+    input_password = args[0]
+    if input_password != admin_password:
+        await message.answer("Не правильный пароль!")
+        return
+    db.create_admin(message.chat.id)
+    await message.answer("Теперь вы администратор")
 
 async def main():
     await dp.start_polling(bot)
