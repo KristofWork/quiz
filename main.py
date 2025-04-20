@@ -20,6 +20,14 @@ bot = Bot(token)
 dp = Dispatcher()
 db = DB("quiz.db")
 
+@dp.message(Command("start"))
+async def start(message: types.Message):
+    if not db.is_user_exists(message.chat.id):
+        db.create_user(message.chat.id, message.from_user.username)
+    
+    # TODO: Проверка запущена ли игра
+    # TODO: Начать задавать вопросы
+
 
 async def main():
     await dp.start_polling(bot)
