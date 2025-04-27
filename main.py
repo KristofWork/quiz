@@ -67,6 +67,19 @@ async def startgame(message: types.Message):
     for user_id in db.get_all_users_id():
         bot.send_message(user_id, "Игра началась! Поскорее пиши /start, чтобы начать!")
 
+@dp.message(Command("stopgame"))
+async def stopgame(message: types.Message):
+    if not db.is_admin(message.chat.id):
+        return
+
+    if not db.is_game_on():
+        await message.answer("Игра не запущена!")
+        return
+    db.change_game_state(False)
+    await message.answer('Игра остановлена!')
+
+    for user_id in db.get_all_users_id():
+        bot.send_message(user_id, "Игра закончилась! Ждите начала следующей игры или конца дня.")
 
 async def main():
     await dp.start_polling(bot)
