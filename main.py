@@ -65,7 +65,7 @@ async def startgame(message: types.Message):
     await message.answer("Игра запущена!")
 
     for user_id in db.get_all_users_id():
-        bot.send_message(user_id, "Игра началась! Поскорее пиши /start, чтобы начать!")
+        await bot.send_message(user_id, "Игра началась! Поскорее пиши /start, чтобы начать!")
 
 @dp.message(Command("stopgame"))
 async def stopgame(message: types.Message):
@@ -79,7 +79,7 @@ async def stopgame(message: types.Message):
     await message.answer('Игра остановлена!')
 
     for user_id in db.get_all_users_id():
-        bot.send_message(user_id, "Игра закончилась! Ждите начала следующей игры или конца дня.")
+        await bot.send_message(user_id, "Игра закончилась! Ждите начала следующей игры или конца дня.")
 
 async def main():
     await dp.start_polling(bot)
