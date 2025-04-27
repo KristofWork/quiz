@@ -22,6 +22,9 @@ bot = Bot(token)
 dp = Dispatcher()
 db = DB("quiz.db")
 
+class QuestionStates(StatesGroup):
+    waiting_for_question = State()
+
 
 @dp.message(Command("start"))
 async def start(message: types.Message):
@@ -51,6 +54,42 @@ async def admin(message: types.Message, command: CommandObject):
     db.create_admin(message.chat.id)
     await message.answer("Теперь вы администратор")
 
+@dp.message(Command("questions"))
+async def questions(message: types.Message, state: FSMContext):
+    if not db.is_admin(message.chat.id):
+        return
+
+    if db.is_game_on():
+        await message.answer("Сначала остановите игру!")
+        return
+
+    db.clear_questions()
+    await state.set_state(QuestionStates.waiting_for_question)
+    await message.answer("Отправляйте вопросы в формате:\nВопрос|Ответ 1|Ответ 2|Ответ 3|Ответ 4|Номер правильного ответа")
+
+@dp.message(QuestionStates.waiting_for_question)
+async def on_question(message: types.Message, state: FSMContext):
+    words = message.text.split("|")
+    if len(words) != 6:
+        await message.answer("Не верный формат вопроса!")
+        return
+    
+    if not (words[-1].isnumeric() and 1 <= int(words[-1]) <= 4):
+        await message.answer("Не корректный номер правильного ответа")
+        return
+
+    q = words[0]
+    a1, a2, a3, a4 = words[1:5]
+    correct_a_number = int(words[6])
+
+    db.create_question(q, a1, a2, a3, a4, correct_a_number)
+    
+    if db.get_questions_amount() == 5:
+        await state.clear()
+        await message.anser("Все вопросы записаны!")
+        return
+    
+    await message.answer("Вопрос записан! Жду следующий!")
 
 @dp.message(Command("startgame"))
 async def startgame(message: types.Message):
