@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import time
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
@@ -22,18 +23,36 @@ bot = Bot(token)
 dp = Dispatcher()
 db = DB("quiz.db")
 
+questions_list = db.get_all_questions()
+
 
 class QuestionStates(StatesGroup):
     waiting_for_question = State()
 
 
+class AnswerState(StatesGroup):
+    waiting_for_answer = State()
+
+
 @dp.message(Command("start"))
-async def start(message: types.Message):
+async def start(message: types.Message, state: FSMContext):
     if not db.is_user_exists(message.chat.id):
         db.create_user(message.chat.id, message.from_user.username)
 
-    # TODO: Проверка запущена ли игра
-    # TODO: Начать задавать вопросы
+    if not db.is_game_on():
+        await message.answer("Дождитесь начала игры! Вам придет уведомление")
+        return
+
+    await state.update_data(start_time=time.time())
+    await state.update_data(points=0)
+    await state.update_data(question_number=0)
+    # TODO: Задаем первый вопрос
+    await state.set_state(AnswerState.waiting_for_answer)
+
+
+@dp.message(AnswerState.waiting_for_answer)
+async def answer(message: types.Message, state: FSMContext):
+    pass
 
 
 @dp.message(Command("admin"))
@@ -106,6 +125,11 @@ async def startgame(message: types.Message):
         await message.answer("Игра уже запущена!")
         return
 
+    if db.get_questions_amount() != 5:
+        await message.answer("Не верное количество вопросов!")
+        return
+
+    questions_list = db.get_all_questions()
     db.change_game_state(True)
     await message.answer("Игра запущена!")
 
