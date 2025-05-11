@@ -42,3 +42,20 @@ class DB:
         for users_id_tuple in self.cursor.fetchall():
             users_id.append(users_id_tuple[0])
         return users_id
+
+    def create_question(
+        self, q: str, a1: str, a2: str, a3: str, a4: str, correct_a_number: int
+    ) -> None:
+        self.cursor.execute(
+            "INSERT INTO questions(q, a1, a2, a3, a4, right_a_number) VALUES(?, ?, ?, ?, ?, ?)",
+            [q, a1, a2, a3, a4, correct_a_number],
+        )
+        self.connect.commit()
+
+    def get_questions_amount(self) -> int:
+        self.cursor.execute("SELECT id FROM questions")
+        return len(self.cursor.fetchall())
+
+    def clear_questions(self) -> None:
+        self.cursor.execute("DELETE FROM questions")
+        self.connect.commit()
