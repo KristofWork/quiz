@@ -60,7 +60,7 @@ class DB:
         self.cursor.execute("DELETE FROM questions")
         self.connect.commit()
 
-    def get_all_questions(self) -> list:
+    def get_all_questions(self) -> list[tuple]:
         self.cursor.execute("SELECT q, a1, a2, a3, a4, right_a_number FROM questions")
         return self.cursor.fetchall()
 
