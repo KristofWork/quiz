@@ -63,3 +63,9 @@ class DB:
     def get_all_questions(self) -> list:
         self.cursor.execute("SELECT q, a1, a2, a3, a4, right_a_number FROM questions")
         return self.cursor.fetchall()
+
+    def add_points(self, chat_id: int, points: int) -> None:
+        self.cursor.execute(
+            "UPDATE users SET points = ? WHERE chat_id = ?", [points, chat_id]
+        )
+        self.connect.commit()

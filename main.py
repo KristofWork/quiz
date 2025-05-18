@@ -17,6 +17,7 @@ load_dotenv()
 
 token = os.getenv("BOT_TOKEN")
 admin_password = os.getenv("ADMIN_PASSWORD")
+point_coefficient = 100
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token)
@@ -46,13 +47,64 @@ async def start(message: types.Message, state: FSMContext):
     await state.update_data(start_time=time.time())
     await state.update_data(points=0)
     await state.update_data(question_number=0)
-    # TODO: Задаем первый вопрос
+
+    q, a1, a2, a3, a4, _ = questions_list[0]
+
+    kb = [
+        [types.KeyboardButton(text=a1), types.KeyboardButton(text=a2)],
+        [types.KeyboardButton(text=a3), types.KeyboardButton(text=a4)],
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(
+        keyboard=kb,
+        one_time_keyboard=True,
+        resize_keyboard=True,
+        input_field_placeholder="Выберите вариант ответа",
+    )
+
+    await message.answer(q, reply_markup=keyboard)
+
     await state.set_state(AnswerState.waiting_for_answer)
 
 
 @dp.message(AnswerState.waiting_for_answer)
-async def answer(message: types.Message, state: FSMContext):
-    pass
+async def on_answer(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+
+    previous_question = questions_list[data["question_number"]]
+    correct_answer_number = previous_question[-1]
+    correct_answer = previous_question[correct_answer_number]
+
+    if message.text == correct_answer:
+        data["points"] += 1
+        await state.update_data(points=data["points"])
+
+    if data["question_number"] == 4:
+        await message.answer("Вы ответили на все вопросы!")
+        seconds = time.time() - data["start_time"]
+        result = data["points"] * point_coefficient // seconds
+
+        await message.answer(f"Ваш счет: {result}")
+        db.add_points(message.chat.id, result)
+        return
+
+    await state.update_data(question_number=data["question_number"] + 1)
+
+    q, a1, a2, a3, a4, _ = questions_list[data["question_number"]]
+
+    kb = [
+        [types.KeyboardButton(text=a1), types.KeyboardButton(text=a2)],
+        [types.KeyboardButton(text=a3), types.KeyboardButton(text=a4)],
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(
+        keyboard=kb,
+        one_time_keyboard=True,
+        resize_keyboard=True,
+        input_field_placeholder="Выберите вариант ответа",
+    )
+
+    await message.answer(q, reply_markup=keyboard)
 
 
 @dp.message(Command("admin"))
