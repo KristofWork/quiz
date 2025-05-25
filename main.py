@@ -35,6 +35,21 @@ class AnswerState(StatesGroup):
     waiting_for_answer = State()
 
 
+@dp.message(Command("records"))
+async def on_records(message: types.Message):
+    records = db.get_all_records()
+
+    max_length = 10
+    for record in records:
+        if max_length < len(record[0]):
+            max_length = len(record[0])
+
+    for index, record in enumerate(records, 1):
+        await message.answer(
+            f"{str(index).ljust(2)} | {str(record[0]).ljust(max_length)} | {str(record[1]).ljust(4)}"
+        )
+
+
 @dp.message(Command("start"))
 async def start(message: types.Message, state: FSMContext):
     if not db.is_user_exists(message.chat.id):

@@ -69,3 +69,10 @@ class DB:
             "UPDATE users SET points = ? WHERE chat_id = ?", [points, chat_id]
         )
         self.connect.commit()
+
+    def get_all_records(self, max_records: int = 10) -> list[tuple]:
+        self.cursor.execute(
+            "SELECT username, points FROM users ORDER BY points DESC LIMIT ?",
+            [max_records],
+        )
+        return self.cursor.fetchall()
