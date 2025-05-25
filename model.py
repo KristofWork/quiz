@@ -76,3 +76,7 @@ class DB:
             [max_records],
         )
         return self.cursor.fetchall()
+
+    def clear_records(self):
+        self.cursor.execute("UPDATE users SET points = 0")
+        self.connect.commit()

@@ -23,6 +23,7 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token)
 dp = Dispatcher()
 db = DB("quiz.db")
+promo = "QATDG"
 
 questions_list = db.get_all_questions()
 
@@ -49,7 +50,22 @@ async def on_records(message: types.Message):
             f"{str(index).ljust(2)} | {str(record[1]).ljust(max_length)} | {str(record[2]).ljust(4)}"
         )
 
+
 @dp.message(Command("close"))
+async def on_close(message: types.Message):
+    if not db.is_admin(message.chat.id):
+        return
+
+    if db.is_game_on():
+        await message.answer("Сначала нужно остановить игру")
+        return
+
+    records = db.get_all_records()
+    for record in records:
+        await bot.send_message(
+            record[0], f"Поздравляю, вы победили! Вот ваш промокод: {promo}"
+        )
+    db.clear_records()
 
 
 @dp.message(Command("start"))
