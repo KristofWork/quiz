@@ -196,6 +196,7 @@ async def startgame(message: types.Message):
         await message.answer("Не верное количество вопросов!")
         return
 
+    global questions_list
     questions_list = db.get_all_questions()
     db.change_game_state(True)
     await message.answer("Игра запущена!")
