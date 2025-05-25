@@ -119,6 +119,7 @@ async def on_answer(message: types.Message, state: FSMContext):
 
         await message.answer(f"Ваш счет: {result}")
         db.add_points(message.chat.id, result)
+        await state.clear()
         return
 
     await state.update_data(question_number=data["question_number"] + 1)

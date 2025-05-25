@@ -65,8 +65,11 @@ class DB:
         return self.cursor.fetchall()
 
     def add_points(self, chat_id: int, points: int) -> None:
+        self.cursor.execute("SELECT points FROM users WHERE chat_id = ?", [chat_id])
+        old_points = self.cursor.fetchone()[0]
         self.cursor.execute(
-            "UPDATE users SET points = ? WHERE chat_id = ?", [points, chat_id]
+            "UPDATE users SET points = ? WHERE chat_id = ?",
+            [points + old_points, chat_id],
         )
         self.connect.commit()
 
