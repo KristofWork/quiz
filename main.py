@@ -108,6 +108,11 @@ async def on_answer(message: types.Message, state: FSMContext):
     correct_answer_number = previous_question[-1]
     correct_answer = previous_question[correct_answer_number]
 
+    if not db.is_game_on():
+        await message.answer("Увы, но игра закончена. Ваши ответы больше не принимаються")
+        await state.clear()
+        return
+    
     if message.text == correct_answer:
         data["points"] += 1
         await state.update_data(points=data["points"])
