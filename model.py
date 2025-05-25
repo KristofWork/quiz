@@ -72,7 +72,7 @@ class DB:
 
     def get_all_records(self, max_records: int = 10) -> list[tuple]:
         self.cursor.execute(
-            "SELECT username, points FROM users ORDER BY points DESC LIMIT ?",
+            "SELECT chat_id, username, points FROM users ORDER BY points DESC LIMIT ?",
             [max_records],
         )
         return self.cursor.fetchall()

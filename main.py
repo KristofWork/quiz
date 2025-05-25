@@ -41,13 +41,15 @@ async def on_records(message: types.Message):
 
     max_length = 10
     for record in records:
-        if max_length < len(record[0]):
-            max_length = len(record[0])
+        if max_length < len(record[1]):
+            max_length = len(record[1])
 
     for index, record in enumerate(records, 1):
         await message.answer(
-            f"{str(index).ljust(2)} | {str(record[0]).ljust(max_length)} | {str(record[1]).ljust(4)}"
+            f"{str(index).ljust(2)} | {str(record[1]).ljust(max_length)} | {str(record[2]).ljust(4)}"
         )
+
+@dp.message(Command("close"))
 
 
 @dp.message(Command("start"))
